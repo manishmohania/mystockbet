@@ -1,0 +1,1 @@
+python /home/manish/nse-automation-scripts/sec_bhavdata_full_etl.py && python /home/manish/nse-automation-scripts/cm_52_wk_high_low_etl.py && python /home/manish/nse-automation-scripts/cmvolt_etl.py && python /home/manish/nse-automation-scripts/ma_etl.py
