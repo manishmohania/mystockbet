@@ -28,7 +28,8 @@
 1 21 * * 1-5 python /home/manish/nse-automation-scripts/bhavcopy_nse_fo_etl.py
 30 20 * * 1-5 mysql -umanish -pmohania < /home/manish/nse-automation-scripts/ema.sql
 30 20 * * 6 mysql -umanish -pmohania < /home/manish/nse-automation-scripts/wl.sql
-16-59/2 9 * * 1-5 sh /home/manish/nse-automation-scripts/bse_sensex_etl.sh
-*/2 10,11,12,13,14 * * 1-5 sh /home/manish/nse-automation-scripts/bse_sensex_etl.sh
-0-30/2 15 * * 1-5 sh /home/manish/nse-automation-scripts/bse_sensex_etl.sh
-5 16 * * 1-5 sh /home/manish/nse-automation-scripts/bse_sensex_etl.sh
+# pull sensex 30 data from bse 
+#16-59/2 9 * * 1-5 sh /home/manish/nse-automation-scripts/bse_sensex_etl.sh
+#*/2 10,11,12,13,14 * * 1-5 sh /home/manish/nse-automation-scripts/bse_sensex_etl.sh
+#0-30/2 15 * * 1-5 sh /home/manish/nse-automation-scripts/bse_sensex_etl.sh
+#5 16 * * 1-5 sh /home/manish/nse-automation-scripts/bse_sensex_etl.sh
