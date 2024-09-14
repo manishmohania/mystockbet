@@ -21,11 +21,11 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 # 
 # m h  dom mon dow   command
-45 16 * * 1-5 python /home/manish/nse-automation-scripts/fcm_intrm_bc_etl.py
-1 17 * * 1-5 python /home/manish/nse-automation-scripts/market_data_all_indices_etl.py
+45 16 * * 1-5 /home/manish/.venvs/mystockbetvenv/bin/python /home/manish/nse-automation-scripts/fcm_intrm_bc_etl.py
+1 17 * * 1-5 /home/manish/.venvs/mystockbetvenv/bin/python /home/manish/nse-automation-scripts/market_data_all_indices_etl.py
 30 17 * * 1-5 mysql -umanish -pmohania < /home/manish/nse-automation-scripts/load_market_data_all_indices_adv_dec_for_today.sql
 1 20 * * 1-5 sh /home/manish/nse-automation-scripts/start_sec_full_data_load.sh
-1 21 * * 1-5 python /home/manish/nse-automation-scripts/bhavcopy_nse_fo_etl.py
+1 21 * * 1-5 /home/manish/.venvs/mystockbetvenv/bin/python /home/manish/nse-automation-scripts/bhavcopy_nse_fo_etl.py
 30 20 * * 1-5 mysql -umanish -pmohania < /home/manish/nse-automation-scripts/ema.sql
 30 20 * * 6 mysql -umanish -pmohania < /home/manish/nse-automation-scripts/wl.sql
 # pull sensex 30 data from bse 

@@ -83,5 +83,20 @@ mkdir $HOME/nseprocessedfiles
 check if $HOME/Downloads directory exists. If it doesn't exist then create this directory.
 mkdir $HOME/Downloads
 
-
+Update path to point to your home directory in file mystockbet/cronjobs/crontab-schedule-list.txt and file mystockbet/cronjobs/start_sec_full_data_load.sh
 Setup cron job schedules as mentioned in file: mystockbet/cronjobs/crontab-schedule-list.txt
+These cron jobs are python script which connect to nse and download end of day reports from nse and store and process them in MariaDB. We need to install mariadb connector driver to connect from python.
+
+Install pip :
+sudo apt-get install python3-pip
+sudo apt-get install libmariadb-dev
+
+Create Virtural Environment:
+sudo apt-get install python3-venv
+cd
+mkdir ~/.venvs
+python3 -m venv ~/.venvs/mystockbetvenv
+~/.venvs/mystockbetvenv/bin/python -m pip install mariadb
+
+Install curl:
+sudo apt-get install curl
