@@ -98,5 +98,6 @@ mkdir ~/.venvs
 python3 -m venv ~/.venvs/mystockbetvenv
 ~/.venvs/mystockbetvenv/bin/python -m pip install mariadb
 
+Python scripts use curl command to download files. Install curl on your system if not installed already.
 Install curl:
 sudo apt-get install curl

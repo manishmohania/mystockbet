@@ -28,11 +28,11 @@ furl='https://nsearchives.nseindia.com/content/'+filename
 dndpath='/home/manish/Downloads/'
 dndfilepath=dndpath+filename
 
-if not os.path.isfile(dndfilepath) :
+if (not os.path.isfile(dndfilepath)) or (os.stat(dndfilepath).st_size < 145000) :
   subprocess.run(['curl', '-A', 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/81.0', furl, '-o', dndfilepath], check=True)
 
 
-if os.path.isfile(dndfilepath) :
+if os.path.isfile(dndfilepath) and (os.stat(dndfilepath).st_size >= 145000) :
     source_file = open(dndfilepath, 'rb')
     destpath='/home/manish/nsemysqluploads/'
     destfilepath=destpath+filename
@@ -46,9 +46,11 @@ if os.path.isfile(dndfilepath) :
         cursor = cnx.cursor()
 
         cursor.execute("USE nse")
-        query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE cm_52_wk_high_low FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 3 LINES (symbol, @series_uv, @adjusted_52_week_high, @52_week_high_date,@adjusted_52_week_low, @52_week_low_dt) set ddate=STR_TO_DATE('"+fdate+"','%d%m%Y'), series=TRIM(@series_uv), adjusted_52_week_high=CASE WHEN @adjusted_52_week_high='-' THEN NULL ELSE TRIM(@adjusted_52_week_high) END, 52_week_high_date=CASE WHEN @52_week_high_date='-' THEN NULL ELSE STR_TO_DATE(@52_week_high_date, '%d-%b-%Y') END, adjusted_52_week_low=CASE WHEN @adjusted_52_week_low='-' THEN NULL ELSE TRIM(@adjusted_52_week_low) END ,52_week_low_dt=CASE WHEN  @52_week_low_dt='-' THEN NULL ELSE STR_TO_DATE(@52_week_low_dt, '%d-%b-%Y') END"
-
-        cursor.execute(query);
+        cursor.execute("select count(1) as cnt from cm_52_wk_high_low t where t.ddate=str_to_date('"+fdate+"','%d%m%Y' )")
+        rs = cursor.fetchall()
+        if (rs[0][0] <= 0) :
+          query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE cm_52_wk_high_low FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 3 LINES (symbol, @series_uv, @adjusted_52_week_high, @52_week_high_date,@adjusted_52_week_low, @52_week_low_dt) set ddate=STR_TO_DATE('"+fdate+"','%d%m%Y'), series=TRIM(@series_uv), adjusted_52_week_high=CASE WHEN @adjusted_52_week_high='-' THEN NULL ELSE TRIM(@adjusted_52_week_high) END, 52_week_high_date=CASE WHEN @52_week_high_date='-' THEN NULL ELSE STR_TO_DATE(@52_week_high_date, '%d-%b-%Y') END, adjusted_52_week_low=CASE WHEN @adjusted_52_week_low='-' THEN NULL ELSE TRIM(@adjusted_52_week_low) END ,52_week_low_dt=CASE WHEN  @52_week_low_dt='-' THEN NULL ELSE STR_TO_DATE(@52_week_low_dt, '%d-%b-%Y') END"
+          cursor.execute(query);
         
         cnx.commit()
         cursor.close()

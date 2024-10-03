@@ -13,7 +13,7 @@ from zipfile import ZipFile
 
 now = datetime.now()
 fdate = now.strftime("%Y%m%d")
-#fdate = '20240802'
+#fdate = '20240923'
 csvfilename='BhavCopy_NSE_FO_0_0_0_'+fdate.upper()+'_F_0000.csv'
 zipfilename='BhavCopy_NSE_FO_0_0_0_'+fdate.upper()+'_F_0000.csv.zip'
 
@@ -37,11 +37,11 @@ dndfilepath=dndpath+zipfilename
 destpath='/home/manish/nsemysqluploads/'
 destfilepath=destpath+csvfilename
 
-if not os.path.isfile(dndfilepath) :
+if (not os.path.isfile(dndfilepath)) or (os.stat(dndfilepath).st_size < 900000) :
   subprocess.run(['curl', '-A', 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/81.0', furl, '-o', dndfilepath], check=True)
 
 
-if os.path.isfile(dndfilepath) :
+if os.path.isfile(dndfilepath) and (os.stat(dndfilepath).st_size >= 900000) :
   with ZipFile(dndfilepath, 'r') as zObject: 
   
     # Extracting all the members of the zip  
@@ -55,17 +55,23 @@ if os.path.isfile(dndfilepath) :
         cursor = cnx.cursor()
 
         cursor.execute("USE nse")
-        query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE bhavcopy_nse_fo FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES (TradDt,	BizDt,	Sgmt,	Src,	FinInstrmTp,	FinInstrmId,	ISIN,	TckrSymb,	SctySrs,	XpryDt,	FininstrmActlXpryDt,	@StrkPric,	OptnTp,	FinInstrmNm,	OpnPric,	HghPric,	LwPric,	ClsPric,	LastPric,	PrvsClsgPric,	UndrlygPric,	SttlmPric,	OpnIntrst,	ChngInOpnIntrst,	TtlTradgVol,	TtlTrfVal,	TtlNbOfTxsExctd,	SsnId,	NewBrdLotQty,	Rmks,	Rsvd1,	Rsvd2,	Rsvd3,	Rsvd4) SET StrkPric=IF(@StrkPric='',NULL,@StrkPric)"
+        cursor.execute("select count(1) as cnt from bhavcopy_nse_fo t where t.TradDt=str_to_date('"+fdate+"','%Y%m%d' )")
+        rs = cursor.fetchall()
+        if (rs[0][0] <= 0) :
+          query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE bhavcopy_nse_fo FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES (TradDt,	BizDt,	Sgmt,	Src,	FinInstrmTp,	FinInstrmId,	ISIN,	TckrSymb,	SctySrs,	XpryDt,	FininstrmActlXpryDt,	@StrkPric,	OptnTp,	FinInstrmNm,	OpnPric,	HghPric,	LwPric,	ClsPric,	LastPric,	PrvsClsgPric,	UndrlygPric,	SttlmPric,	OpnIntrst,	ChngInOpnIntrst,	TtlTradgVol,	TtlTrfVal,	TtlNbOfTxsExctd,	SsnId,	NewBrdLotQty,	Rmks,	Rsvd1,	Rsvd2,	Rsvd3,	Rsvd4) SET StrkPric=IF(@StrkPric='',NULL,@StrkPric)"
 
-        cursor.execute(query);
+          cursor.execute(query);
         
         cnx.commit()
         cursor.close()
 
-        query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE fo_bhav FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES (ddate,	@BizDt,	@Sgmt,	@Src,	@FinInstrmTp,	@FinInstrmId,	@ISIN,	symbol,	@SctySrs,	expiry_dt,	@FininstrmActlXpryDt, @StrkPric,	option_typ,	@FinInstrmNm,	open,	high,	low,	close,	@LastPric,	@PrvsClsgPric,	@UndrlygPric,	settle_pr,	open_int,	chg_in_oi,	contracts,	@TtlTrfVal,	@TtlNbOfTxsExctd,	@SsnId,	@NewBrdLotQty,	@Rmks,	@Rsvd1,	@Rsvd2,	@Rsvd3,	@Rsvd4) SET strike_pr=IF(@StrkPric='',0.0,@StrkPric), val_inlakh=(@TtlTrfVal / 100000), instrument=case when @FinInstrmTp = 'STO' THEN 'OPTSTK' WHEN @FinInstrmTp = 'STF' THEN 'FUTSTK' WHEN @FinInstrmTp = 'IDO' THEN 'OPTIDX' WHEN @FinInstrmTp = 'IDF' THEN 'FUTIDX' ELSE @FinInstrmTp end"
         cursor = cnx.cursor()
+        cursor.execute("select count(1) as cnt from fo_bhav t where t.ddate=str_to_date('"+fdate+"','%Y%m%d' )")
+        rs = cursor.fetchall()
+        if (rs[0][0] <= 0) :
+          query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE fo_bhav FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES (ddate,	@BizDt,	@Sgmt,	@Src,	@FinInstrmTp,	@FinInstrmId,	@ISIN,	symbol,	@SctySrs,	expiry_dt,	@FininstrmActlXpryDt, @StrkPric,	option_typ,	@FinInstrmNm,	open,	high,	low,	close,	@LastPric,	@PrvsClsgPric,	@UndrlygPric,	settle_pr,	open_int,	chg_in_oi,	contracts,	@TtlTrfVal,	@TtlNbOfTxsExctd,	@SsnId,	@NewBrdLotQty,	@Rmks,	@Rsvd1,	@Rsvd2,	@Rsvd3,	@Rsvd4) SET strike_pr=IF(@StrkPric='',0.0,@StrkPric), val_inlakh=(@TtlTrfVal / 100000), instrument=case when @FinInstrmTp = 'STO' THEN 'OPTSTK' WHEN @FinInstrmTp = 'STF' THEN 'FUTSTK' WHEN @FinInstrmTp = 'IDO' THEN 'OPTIDX' WHEN @FinInstrmTp = 'IDF' THEN 'FUTIDX' ELSE @FinInstrmTp end"
 
-        cursor.execute(query);
+          cursor.execute(query);
         cnx.commit()
 
         cursor.close()

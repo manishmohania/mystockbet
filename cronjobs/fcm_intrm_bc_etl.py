@@ -28,10 +28,10 @@ furl='https://nsearchives.nseindia.com/content/trdops/'+filename
 dndpath='/home/manish/Downloads/'
 dndfilepath=dndpath+filename
 
-if not os.path.isfile(dndfilepath) :
+if (not os.path.isfile(dndfilepath)) or (os.stat(dndfilepath).st_size < 500000) :
   subprocess.run(['curl', '-A', 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/81.0', furl, '-o', dndfilepath], check=True)
 
-if os.path.isfile(dndfilepath) :
+if os.path.isfile(dndfilepath) and (os.stat(dndfilepath).st_size >= 500000):
     source_file = open(dndfilepath, 'rb')
     destpath='/home/manish/nsemysqluploads/'
     destfilepath=destpath+filename
@@ -46,9 +46,13 @@ if os.path.isfile(dndfilepath) :
         cursor = cnx.cursor()
 
         cursor.execute("USE nse")
-        query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE fcm_intrm_bc FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' (name, @symbol, series, @dummy, prev_close,open, high, low, close, @dummy, @dummy, @dummy, @dummy, @dummy, @ddate, @dummy) set ddate=STR_TO_DATE(@ddate, '%d-%b-%Y'), symbol=TRIM(@symbol)"
-
-        cursor.execute(query);
+        cursor.execute("select count(1) as cnt from fcm_intrm_bc t where t.ddate=str_to_date('"+fdate+"','%d%m%Y' )")
+        rs = cursor.fetchall()
+        if (rs[0][0] <= 0) :
+          query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE fcm_intrm_bc FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' (name, @symbol, series, @dummy, prev_close,open, high, low, close, @dummy, @dummy, @dummy, @dummy, @dummy, @ddate, @dummy) set ddate=STR_TO_DATE(@ddate, '%d-%b-%Y'), symbol=TRIM(@symbol)"
+          cursor.execute(query);
+        else :
+          print('skipping data load as records are already present')
         
         cnx.commit()
         cursor.close()

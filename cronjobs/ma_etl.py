@@ -29,10 +29,10 @@ furl='https://nsearchives.nseindia.com/archives/equities/mkt/'+filename
 dndpath='/home/manish/Downloads/'
 dndfilepath=dndpath+filename
 
-if not os.path.isfile(dndfilepath) :
+if (not os.path.isfile(dndfilepath)) or (os.stat(dndfilepath).st_size < 170000):
   subprocess.run(['curl', '-A', 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/81.0', furl, '-o', dndfilepath], check=True)
 
-if os.path.isfile(dndfilepath) :
+if os.path.isfile(dndfilepath) and (os.stat(dndfilepath).st_size >= 170000):
     source_file = open(dndfilepath, 'rb')
     destpath='/home/manish/nseprocessedfiles/'
     destfilepath=destpath+filename
@@ -45,6 +45,11 @@ cnx = mariadb.connect(user='manish', password='mohania', database='nse')
 cursor = cnx.cursor()
 
 cursor.execute("USE nse")
+cursor.execute("select count(1) as cnt from ma_summary t where t.ddate=str_to_date('"+fdate+"','%d%m%Y' )")
+rs = cursor.fetchall()
+if (rs[0][0] > 0) :
+    print('data already exists')
+    exit(0);
 
 pdt=None
 vddate=None

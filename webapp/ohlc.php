@@ -1,6 +1,7 @@
 <?php
 header('Content-type: application/json');
 require 'db.php';
+require 'util.php';
 
 try {
   $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);

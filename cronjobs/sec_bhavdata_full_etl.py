@@ -28,10 +28,10 @@ furl='https://nsearchives.nseindia.com/products/content/'+filename
 dndpath='/home/manish/Downloads/'
 dndfilepath=dndpath+filename
 
-if not os.path.isfile(dndfilepath) :
+if (not os.path.isfile(dndfilepath)) or (os.stat(dndfilepath).st_size < 285000) :
   subprocess.run(['curl', '-A', 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/81.0', furl, '-o', dndfilepath], check=True)
 
-if os.path.isfile(dndfilepath) :
+if os.path.isfile(dndfilepath) and (os.stat(dndfilepath).st_size >= 285000):
     source_file = open(dndfilepath, 'rb')
     destpath='/home/manish/nsemysqluploads/'
     destfilepath=destpath+filename
@@ -46,9 +46,12 @@ if os.path.isfile(dndfilepath) :
         cursor = cnx.cursor()
 
         cursor.execute("USE nse")
-        query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE sec_bhavdata_full FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES (symbol, @series_uv, @date1_uv, prev_close, open_price, high_price, low_price, @last_price_uv, close_price, avg_price, ttl_trd_qnty, turnover_lacs, no_of_trades, @deliv_qty_uv, @deliv_per_uv) set series=TRIM(@series_uv), last_price=CASE WHEN @last_price_uv=' ' THEN NULL ELSE @last_price_uv END , ddate=STR_TO_DATE(@date1_uv, '%d-%b-%Y'), deliv_qty=CASE WHEN @deliv_qty_uv=' -' THEN NULL ELSE @deliv_qty_uv END, deliv_per=CASE WHEN @deliv_per_uv=' -' THEN NULL ELSE @deliv_per_uv END"
+        cursor.execute("select count(1) as cnt from sec_bhavdata_full t where t.ddate=str_to_date('"+fdate+"','%d%m%Y' )")
+        rs = cursor.fetchall()
+        if (rs[0][0] <= 0) :
+          query = "LOAD DATA LOCAL INFILE '" + destfilepath + "' INTO TABLE sec_bhavdata_full FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\n' IGNORE 1 LINES (symbol, @series_uv, @date1_uv, prev_close, open_price, high_price, low_price, @last_price_uv, close_price, avg_price, ttl_trd_qnty, turnover_lacs, no_of_trades, @deliv_qty_uv, @deliv_per_uv) set series=TRIM(@series_uv), last_price=CASE WHEN @last_price_uv=' ' THEN NULL ELSE @last_price_uv END , ddate=STR_TO_DATE(@date1_uv, '%d-%b-%Y'), deliv_qty=CASE WHEN @deliv_qty_uv=' -' THEN NULL ELSE @deliv_qty_uv END, deliv_per=CASE WHEN @deliv_per_uv=' -' THEN NULL ELSE @deliv_per_uv END"
 
-        cursor.execute(query);
+          cursor.execute(query);
         
         cnx.commit()
         cursor.close()

@@ -1,6 +1,7 @@
 <?php
 header('Content-type: application/json');
 require "db.php";
+require "util.php";
 try {
   $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
   // set the PDO error mode to exception
@@ -9,7 +10,7 @@ try {
   $qindv = urldecode($_GET['qindv']);
 
 
-  if ($qindv == 'STKTM') {
+  if ($qindv == 'NSEEODADR') {
     $q='select ddate, (advances/(case when declines is null or declines=0 then 1 else declines end)), advances, declines, unchanged from ma_advance_decline t';
 
     $result = $conn->query($q);

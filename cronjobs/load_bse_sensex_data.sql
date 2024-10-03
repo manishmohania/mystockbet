@@ -118,3 +118,32 @@ insert IGNORE into bse_sensex_data
 select
 ddate,ddatetime, JSON_UNQUOTE(json_extract(jsonDoc, '$[29].LongName')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].expDate')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].strikePrice')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Unit')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].UlaValue')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].LastTrdTime')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].URL')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].ATP')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].PercentChange')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Symbol')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].ScripName')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyQty')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyQty2')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyQty3')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyQty4')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyQty5')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellQty')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellQty2')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellQty3')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellQty4')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellQty5')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Bids1')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Bids2')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Bids3')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Bids4')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Bids5')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Ask1')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Ask2')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Ask3')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Ask4')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Ask5')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyPrice')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyPrice2')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyPrice3')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyPrice4')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].BuyPrice5')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellPrice')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellPrice2')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellPrice3')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellPrice4')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].SellPrice5')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Price')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Change')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Volume')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].TurnOver')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Open')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].High')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Low')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].PreCloseRate')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].OI')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrddttm1')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdPrice1')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdQTy1')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrddttm2')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdPrice2')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdQTy2')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrddttm3')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdPrice3')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdQTy3')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrddttm4')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdPrice4')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdQTy4')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrddttm5')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdPrice5')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].mktTrdQTy5')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].upperCircuit')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].lowerCircuit')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Wk52High')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].W2AvgQ')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Wk52low')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].MCapFF')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].MCapFull')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].PremTurnover')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Market_Lot')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].RBIRefRate')),JSON_UNQUOTE(json_extract(jsonDoc, '$[29].Rcount')) from bse_sensex
 where ddate=current_date() order by ddatetime desc LIMIT 1;
+
+
+/*populate tables*/
+INSERT INTO bse_sensex_tick_data 
+WITH prev_tickdata as (select ddate, ddatetime, Symbol, LastTrdTime, volume from bse_sensex_tick_data 
+where ddate=current_date() and ddatetime=(select max(ddatetime) from bse_sensex_tick_data)
+),
+cur_tickdata as (select ddate, ddatetime, LongName, UlaValue, LastTrdTime, URL, ATP, PercentChange, Symbol, ScripName, Price, `change` as AbsoluteChange, Volume, TurnOver, Open, High, Low,
+PreCloseRate, upperCircuit, lowerCircuit, Wk52High, Wk52low, MCapFF, MCapFull from bse_sensex_data
+where ddate=current_date() and ddatetime=(select max(ddatetime) from bse_sensex_data)
+)
+SELECT `cur_tickdata`.* , `cur_tickdata`.volume-`prev_tickdata`.volume as ttl_trd_qnty 
+FROM
+cur_tickdata inner join prev_tickdata on `cur_tickdata`.Symbol = `prev_tickdata`.Symbol and `cur_tickdata`.ddatetime > `prev_tickdata`.ddatetime
+;
+
+INSERT INTO bse_sensex_tick_data 
+WITH prev_tickdata as (select ddate, ddatetime, LastTrdTime, volume from bse_sensex_tick_data 
+where ddate=current_date() and ddatetime=(select max(ddatetime) from bse_sensex_tick_data)
+),
+cur_tickdata as (select ddate, ddatetime, LongName, UlaValue, LastTrdTime, URL, ATP, PercentChange, Symbol, ScripName, Price, `change` as AbsoluteChange, Volume, TurnOver, Open, High, Low,
+PreCloseRate, upperCircuit, lowerCircuit, Wk52High, Wk52low, MCapFF, MCapFull from bse_sensex_data
+where ddate=current_date() and ddatetime=(select max(ddatetime) from bse_sensex_data)
+)
+SELECT `cur_tickdata`.* , `cur_tickdata`.volume as ttl_trd_qnty 
+FROM
+cur_tickdata WHERE NOT EXISTS(SELECT 1 FROM bse_sensex_tick_data t
+where t.ddate=current_date() and `cur_tickdata`.Symbol = t.Symbol)
+;
